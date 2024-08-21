@@ -2,29 +2,43 @@ import axiosUtils from '../axios-utils';
 import loadingStore from '../../stores/loading';
 import snackbarUtils from '../snackbar-utils';
 
-// Define the HTTP methods as a TypeScript union type
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 class RestUtils {
-    // Define a generic method for API calls
-    async call<T>(url: string, method: HttpMethod, body?: any): Promise<T> {
+    async call<T>(url: string, method: HttpMethod, body?: any, responseType?: any): Promise<T> {
         try {
             loadingStore.setLoading(true);
             let response;
 
             switch (method) {
                 case 'POST':
-                    response = await axiosUtils.post<T>(url, body);
+                    if (responseType) {
+                        response = await axiosUtils.post<T>(url, body, { responseType: responseType });
+                    } else {
+                        response = await axiosUtils.post<T>(url, body);
+                    }
                     break;
                 case 'PUT':
-                    response = await axiosUtils.put<T>(url, body);
+                    if (responseType) {
+                        response = await axiosUtils.put<T>(url, body, { responseType: responseType });
+                    } else {
+                        response = await axiosUtils.put<T>(url, body);
+                    }
                     break;
                 case 'DELETE':
-                    response = await axiosUtils.delete<T>(url);
+                    if (responseType) {
+                        response = await axiosUtils.delete<T>(url, { responseType: responseType });
+                    } else {
+                        response = await axiosUtils.delete<T>(url);
+                    }
                     break;
                 case 'GET':
                 default:
-                    response = await axiosUtils.get<T>(url);
+                    if (responseType) {
+                        response = await axiosUtils.get<T>(url, { responseType: responseType });
+                    } else {
+                        response = await axiosUtils.get<T>(url);
+                    }
                     break;
             }
             return response.data;
