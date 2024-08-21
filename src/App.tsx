@@ -1,22 +1,27 @@
 import { Route, Routes, useLocation } from 'react-router';
-import './App.css';
-import NavBar from './components/nav-bar/NavBar';
-import { Grow } from '@mui/material'; import routes from './routes/routes';
+import NavBar from './components/nav-bar/nav';
+import { Grow } from '@mui/material'; import routes from './routes';
 import ThemeConfig from './theme';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth } from './contexts/auth-context';
 import { SnackbarProvider } from 'notistack';
-import { SnackbarUtilsConfigurator } from './utils/snackbarUtils';
+import { SnackbarUtilsConfigurator } from './utils/snackbar-utils';
 import loadingStore from './stores/loading';
-import Loader from './components/loader/Loader';
-import Login from './pages/auth/login/login';
+import Loader from './components/loader';
+import Login from './pages/auth/login';
+import { observer } from 'mobx-react';
+import NotFound from './pages/not-found';
+
 
 function App() {
 
   const location = useLocation();
   const backgroundLocation = location.state?.backgroundLocation;
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { isloading } = loadingStore;
 
+  const isRoleContained = (jwtRoles: string[], routerRoles: string[]): boolean => {
+    return routerRoles.some(item => jwtRoles.includes(item));
+  };
 
   return (
     <>
@@ -36,7 +41,7 @@ function App() {
               <Routes location={backgroundLocation || location}>
                 {routes.map((r, i) => (
                   <Route key={i} path={r.path}
-                    element={<r.element />}
+                    element={isRoleContained(user?.roles ?? [], r.permissions) ? <r.element /> : <NotFound />}
                   />
                 ))}
               </Routes>
@@ -54,4 +59,4 @@ function App() {
   );
 }
 
-export default App;
+export default observer(App);
