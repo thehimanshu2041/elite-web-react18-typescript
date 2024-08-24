@@ -1,5 +1,7 @@
 export const ELITE_TOKEN = 'elite_token';
 
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
 export interface Page<T> {
     content: T[];
     pageable: Pageable;
@@ -27,4 +29,10 @@ export interface Sort {
     sorted: boolean;
     unsorted: boolean;
     empty: boolean;
+}
+
+export interface TableHeader {
+    id: string;
+    label: string;
+    align: 'left' | 'right' | 'center';
 }

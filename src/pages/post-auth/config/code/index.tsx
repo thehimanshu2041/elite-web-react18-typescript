@@ -1,88 +1,88 @@
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import EliteButton from "../../../../components/elite-button";
 import { useEffect, useState } from "react";
 import { CodeTypeModel } from "../../../../model/config/code-type";
-import { Button, Card, FormControl, Grid, InputLabel, Menu, MenuItem, Select, SelectChangeEvent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+    Button, Card, FormControl, Grid, InputLabel, Menu, MenuItem, Pagination, Select,
+    SelectChangeEvent,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField
+} from "@mui/material";
 import { CodeModel } from "../../../../model/config/code";
 import codeStore from "../../../../stores/config/code";
 import { AiFillDelete, AiFillEdit, AiOutlineMore } from "react-icons/ai";
 import { IconContext } from "react-icons";
 import NoContent from "../../../../components/no-content";
-import snackbarUtils from "../../../../utils/snackbar-utils";
+import snackbarUtils from "../../../../utils/snackbar";
 import BreadCrumb from "../../../../components/breadcrumb";
 import codeTypeStore from "../../../../stores/config/code-type";
-
-export interface TableHeader {
-    id: string;
-    label: string;
-    align: 'left' | 'right' | 'center';
-}
+import useDebounce from "../../../../utils/debounce";
+import { TableHeader } from "../../../../model/elite";
 
 const Code: React.FC = () => {
 
     const TABLE_HEAD = [
-        {
-            id: 'id',
-            label: 'Id',
-            align: 'left'
-        },
-        {
-            id: 'code',
-            label: 'Code',
-            align: 'left'
-        },
-        {
-            id: 'name',
-            label: 'Name',
-            align: 'left'
-        },
-        {
-            id: 'description',
-            label: 'Description',
-            align: 'left'
-        },
-        {
-            id: 'actions',
-            label: 'Actions',
-            align: 'right'
-        }
+        { id: 'id', label: 'Id', align: 'left' },
+        { id: 'code', label: 'Code', align: 'left' },
+        { id: 'name', label: 'Name', align: 'left' },
+        { id: 'description', label: 'Description', align: 'left' },
+        { id: 'actions', label: 'Actions', align: 'right' }
     ] as TableHeader[];
 
     const [codeType, setCodeType] = useState<CodeTypeModel[]>([]);
     const [codes, setCodes] = useState<CodeModel[]>([]);
-    const [refId, setRefId] = useState<number>();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [pageSize] = useState(10);
+    const [name, setName] = useState('');
+    const debouncedSearchTerm = useDebounce(name, 500);
+
+    const [refId, setRefId] = useState<any>('');
     const navigate = useNavigate();
 
+    const { deleteCodesById, searchCode } = codeStore;
     const { getCodeTypes } = codeTypeStore;
-    const { getCodesById, deleteCodesById } = codeStore;
 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const editOpen = Boolean(anchorEl);
+    const [menuAnchorEls, setMenuAnchorEls] = useState<{ [key: number]: HTMLElement | null }>({});
 
-    const handleOnChange = async (event: SelectChangeEvent<any>) => {
-        setCodes([]);
-        const value = event?.target?.value;
-        if (value) {
-            setRefId(value);
-            getCodesById(value).then(c => setCodes(c));
-        }
+    useEffect(() => {
+        getCodeTypes().then(c => setCodeType(c));
+    }, []);
+
+    useEffect(() => {
+        onInit(debouncedSearchTerm, currentPage, refId);
+    }, [refId, debouncedSearchTerm, currentPage]);
+
+    const onInit = async (searchTerm: string, page: number, refId: number) => {
+        const data = await searchCode(refId, searchTerm, (page - 1), pageSize);
+        setCodes(data.content);
+        setTotalPages(data.totalPages);
     };
 
-    const handleEditClick = (event: any) => {
-        setAnchorEl(event.currentTarget);
+    const handleOptionChange = (e: SelectChangeEvent<string>) => {
+        setRefId(e.target.value);
+        setCurrentPage(1);
     };
 
-    const handleEditClose = () => {
-        setAnchorEl(null);
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setName(e.target.value);
+        setCurrentPage(1);
     };
 
-    const handleEdit = (id: number | undefined) => {
-        handleEditClose();
-        navigate(`/config/code/add-edit/${refId}/${id}`);
+    const handleMenuClick = (event: any, id: number) => {
+        setMenuAnchorEls((prev) => ({ ...prev, [id]: event.currentTarget }));
+    };
+
+    const handleMenuClose = (id: number) => {
+        setMenuAnchorEls((prev) => ({ ...prev, [id]: null }));
+    };
+
+    const handleEdit = (id: number) => {
+        handleMenuClose(id);
+        navigate(`/config/code/add-edit/${id}`);
     }
 
-    const handleDelete = async (id: number | undefined) => {
-        handleEditClose();
+    const handleDelete = async (id: number) => {
+        handleMenuClose(id);
         if (id) {
             await deleteCodesById(id);
             snackbarUtils.success('Code has been successfully deleted!!!');
@@ -90,19 +90,9 @@ const Code: React.FC = () => {
         }
     }
 
-    const loadData = async () => {
-        await getCodeTypes().then(c => setCodeType(c));
-    };
-
-    useEffect(() => {
-        snackbarUtils.info('Please select a code type!!!')
-        loadData();
-    }, []);
-
-
     return (
         <>
-            <BreadCrumb heading="Code" actions={refId ? [<AddCode refId={refId} />] : null} />
+            <BreadCrumb heading="Code" actions={[<AddCode />]} />
             <Card className='p-5 shadow-none'>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -113,15 +103,32 @@ const Code: React.FC = () => {
                                 labelId="CodeTypeId"
                                 label="CodeTypeId"
                                 placeholder="CodeTypeId"
-                                onChange={(val) => handleOnChange(val)}
+                                onChange={handleOptionChange}
                                 name="codeTypeId"
+                                value={refId}
                             >
+                                <MenuItem key='ALL' value=''>
+                                    ALL
+                                </MenuItem>
                                 {codeType.map((value, index) => (
                                     <MenuItem key={index} value={value.id}>
                                         {value.name}
                                     </MenuItem>
                                 ))}
                             </Select>
+                        </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                        <FormControl style={{ width: "100%" }}>
+                            <TextField
+                                fullWidth
+                                type="text"
+                                label="Search"
+                                placeholder="Search"
+                                onChange={handleSearchChange}
+                                name="search"
+                            />
                         </FormControl>
                     </Grid>
 
@@ -141,6 +148,7 @@ const Code: React.FC = () => {
                             </TableHead>
                             <TableBody>
                                 {codes?.length > 0 && codes.map((row, index) => {
+                                    const menuOpen = Boolean(menuAnchorEls[row.id]);
                                     return (
                                         <>
                                             <TableRow hover tabIndex={-1}>
@@ -159,8 +167,8 @@ const Code: React.FC = () => {
                                                 <TableCell align="right">
                                                     <div>
                                                         <Button
-                                                            aria-controls={editOpen ? 'basic-menu' : undefined}
-                                                            onClick={handleEditClick}
+                                                            aria-controls={menuOpen ? 'basic-menu' : undefined}
+                                                            onClick={(e) => handleMenuClick(e, row.id!)}
                                                             className="p-2 rounded-full hover:bg-gray-200 focus:outline-none"
                                                         >
                                                             <IconContext.Provider value={{ className: 'text-xl' }}>
@@ -168,15 +176,15 @@ const Code: React.FC = () => {
                                                             </IconContext.Provider>
                                                         </Button>
                                                         <Menu
-                                                            anchorEl={anchorEl}
-                                                            open={editOpen}
-                                                            onClose={handleEditClose}
+                                                            anchorEl={menuAnchorEls[row.id!]}
+                                                            open={menuOpen}
+                                                            onClose={() => handleMenuClose(row.id!)}
                                                         >
-                                                            <MenuItem onClick={() => handleEdit(row.id)}>
+                                                            <MenuItem onClick={() => handleEdit(row.id!)}>
                                                                 <AiFillEdit className="text-green mr-2" />
                                                                 Edit
                                                             </MenuItem>
-                                                            <MenuItem onClick={() => handleDelete(row.id)}>
+                                                            <MenuItem onClick={() => handleDelete(row.id!)}>
                                                                 <AiFillDelete className="text-red mr-2" />
                                                                 Delete
                                                             </MenuItem>
@@ -187,6 +195,14 @@ const Code: React.FC = () => {
                                         </>
                                     );
                                 })}
+
+                                {codes?.length > 0 && <Pagination className="my-3"
+                                    count={totalPages}
+                                    page={currentPage}
+                                    variant="outlined"
+                                    onChange={(event, value) => setCurrentPage(value)}
+                                />
+                                }
                             </TableBody>
                         </Table>
                         {codes?.length < 1 && <NoContent />}
@@ -199,16 +215,12 @@ const Code: React.FC = () => {
 
 export default Code;
 
-export interface AddCodeProps {
-    refId: number | undefined;
-}
 
-const AddCode: React.FC<AddCodeProps> = ({ refId }) => {
+
+const AddCode: React.FC = () => {
     const navigate = useNavigate();
-
     const handleAdd = async () => {
-        console.log(refId);
-        navigate(`/config/code/add-edit/${refId}`);
+        navigate(`/config/code/add-edit`);
     };
 
     return (

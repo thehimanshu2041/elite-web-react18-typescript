@@ -2,47 +2,26 @@ import { useEffect, useState } from "react";
 import BreadCrumb from "../../../../components/breadcrumb";
 import countryStore from "../../../../stores/config/country";
 import { CountryModel } from "../../../../model/config/country";
-import { Card, FormControl, Grid, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+import {
+    Card, FormControl, Grid, Pagination, Table, TableBody, TableCell,
+    TableContainer, TableHead, TableRow, TextField
+} from "@mui/material";
 import NoContent from "../../../../components/no-content";
-import useDebounce from "../../../../utils/debounce-utils";
-
-export interface TableHeader {
-    id: string;
-    label: string;
-    align: 'left' | 'right' | 'center';
-}
+import useDebounce from "../../../../utils/debounce";
+import { TableHeader } from "../../../../model/elite";
 
 const Country: React.FC = () => {
 
     const TABLE_HEAD = [
-        {
-            id: 'id',
-            label: 'Id',
-            align: 'left'
-        },
-        {
-            id: 'name',
-            label: 'Name',
-            align: 'left'
-        },
-        {
-            id: 'isp',
-            label: 'Isp',
-            align: 'left'
-        },
-        {
-            id: 'numCode',
-            label: 'Num code',
-            align: 'left'
-        },
-        {
-            id: 'phoneCode',
-            label: 'Phone Code',
-            align: 'left'
-        }
+        { id: 'id', label: 'Id', align: 'left' },
+        { id: 'name', label: 'Name', align: 'left' },
+        { id: 'isp', label: 'Isp', align: 'left' },
+        { id: 'num-code', label: 'Num Code', align: 'left' },
+        { id: 'phone-code', label: 'Phone Code', align: 'left' }
     ] as TableHeader[];
 
     const { getCountriesBySearch } = countryStore;
+
     const [country, setCountry] = useState<CountryModel[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -51,24 +30,20 @@ const Country: React.FC = () => {
     const debouncedSearchTerm = useDebounce(name, 500);
 
 
-    const loadData = async () => {
-        const data = await getCountriesBySearch(name, currentPage - 1, pageSize);
+    useEffect(() => {
+        onInit(debouncedSearchTerm, currentPage);
+    }, [debouncedSearchTerm, currentPage]);
+
+    const onInit = async (searchTerm: string, page: number) => {
+        const data = await getCountriesBySearch(searchTerm, (page - 1), pageSize);
         setCountry(data.content);
         setTotalPages(data.totalPages);
     };
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    useEffect(() => {
-        loadData();
-    }, [currentPage]);
-
-    useEffect(() => {
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setName(e.target.value);
         setCurrentPage(1);
-        loadData();
-    }, [debouncedSearchTerm]);
+    };
 
     return (
         <>
@@ -82,7 +57,7 @@ const Country: React.FC = () => {
                                 type="text"
                                 label="Search"
                                 placeholder="Search"
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={handleSearchChange}
                                 name="search"
                             />
                         </FormControl>

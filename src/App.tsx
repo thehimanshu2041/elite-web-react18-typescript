@@ -4,7 +4,7 @@ import { Grow } from '@mui/material'; import routes from './routes';
 import ThemeConfig from './theme';
 import { useAuth } from './contexts/auth-context';
 import { SnackbarProvider } from 'notistack';
-import { SnackbarUtilsConfigurator } from './utils/snackbar-utils';
+import { SnackbarUtilsConfigurator } from './utils/snackbar';
 import loadingStore from './stores/loading';
 import Loader from './components/loader';
 import Login from './pages/auth/login';
@@ -13,7 +13,7 @@ import NotFound from './pages/not-found';
 
 
 function App() {
-
+  
   const location = useLocation();
   const backgroundLocation = location.state?.backgroundLocation;
   const { isAuthenticated, user } = useAuth();

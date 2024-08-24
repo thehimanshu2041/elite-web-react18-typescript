@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import restUtils from '../../utils/rest-utils';
+import restUtils from '../../utils/rest';
 import { AuthModel, AuthUserModel } from '../../model/auth';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';

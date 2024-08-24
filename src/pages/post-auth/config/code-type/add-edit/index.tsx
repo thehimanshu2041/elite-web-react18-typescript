@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { CodeTypeModel } from "../../../../../model/config/code-type";
 import { Card, FormControl, Grid, TextField } from "@mui/material";
 import EliteButton from "../../../../../components/elite-button";
-import snackbarUtils from "../../../../../utils/snackbar-utils";
+import snackbarUtils from "../../../../../utils/snackbar";
 import codeTypeStore from "../../../../../stores/config/code-type";
 
 const AddEditCodeType: React.FC = () => {

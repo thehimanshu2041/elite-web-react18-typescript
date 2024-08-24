@@ -4,7 +4,8 @@ import CodeType from '../pages/post-auth/config/code-type';
 import AddEditCodeType from '../pages/post-auth/config/code-type/add-edit';
 import AddEditCode from '../pages/post-auth/config/code/add-edit';
 import Country from '../pages/post-auth/config/country';
-import Register from '../pages/post-auth/config/user';
+import User from '../pages/post-auth/config/user';
+import AddEditUser from '../pages/post-auth/config/user/add-edit';
 import Dashboard from '../pages/post-auth/dashboard';
 
 interface Route {
@@ -21,7 +22,17 @@ const routes: Route[] = [
     },
     {
         path: '/config/user',
-        element: Register,
+        element: User,
+        permissions: ['ADMIN']
+    },
+    {
+        path: '/config/user/add-edit',
+        element: AddEditUser,
+        permissions: ['ADMIN']
+    },
+    {
+        path: '/config/user/add-edit/:id',
+        element: AddEditUser,
         permissions: ['ADMIN']
     },
     {
@@ -45,12 +56,12 @@ const routes: Route[] = [
         permissions: ['ADMIN']
     },
     {
-        path: '/config/code/add-edit/:refId',
+        path: '/config/code/add-edit',
         element: AddEditCode,
         permissions: ['ADMIN']
     },
     {
-        path: '/config/code/add-edit/:refId/:codeId',
+        path: '/config/code/add-edit/:codeId',
         element: AddEditCode,
         permissions: ['ADMIN']
     },

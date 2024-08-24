@@ -1,29 +1,30 @@
 export interface AuthModel {
-    username?: string;
-    password?: string;
+    username: string;
+    password: string;
 }
 
 export interface AuthUserModel {
-    username?: string;
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-    gender?: GenderModel;
-    address?: string;
-    phone?: number;
-    country?: CountryModel;
+    id?: number;
+    username: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    gender: GenderModel;
+    address: string;
+    phone: number;
+    country: CountryModel;
     roles?: string[]
 }
 
 export interface GenderModel {
-    id?: number;
+    id: number;
     code?: string;
     name?: string;
     description?: string;
 }
 
 export interface CountryModel {
-    id?: number;
+    id: number;
     isp?: string;
     name?: string;
     niceName?: string;

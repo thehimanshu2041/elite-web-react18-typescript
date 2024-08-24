@@ -1,5 +1,5 @@
 import { createContext, ReactNode, FC } from 'react';
-import UseLocalStorage from '../../hooks/use-local-storage';
+import useLocalStorage from '../../hooks/use-local-storage';
 import palette from '../../theme/palette';
 
 interface ColorOption {
@@ -123,7 +123,7 @@ interface SettingsProviderProps {
 }
 
 const SettingsProvider: FC<SettingsProviderProps> = ({ children }) => {
-    const [settings, setSettings] = UseLocalStorage('settings', {
+    const [settings, setSettings] = useLocalStorage('settings', {
         themeMode: initialState.themeMode,
         themeDirection: initialState.themeDirection,
         themeColor: initialState.themeColor,

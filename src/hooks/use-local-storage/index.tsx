@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 type SetValue<T> = T | ((currentValue: T) => T);
 
-export default function UseLocalStorage<T>(key: string, defaultValue: T): [T, (newValue: SetValue<T>) => void] {
+export default function useLocalStorage<T>(key: string, defaultValue: T): [T, (newValue: SetValue<T>) => void] {
   const [value, setValue] = useState<T>(() => {
     const storedValue = localStorage.getItem(key);
     return storedValue === null ? defaultValue : JSON.parse(storedValue);

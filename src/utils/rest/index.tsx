@@ -1,15 +1,14 @@
-import axiosUtils from '../axios-utils';
+import axiosUtils from '../axios';
 import loadingStore from '../../stores/loading';
-import snackbarUtils from '../snackbar-utils';
-
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+import snackbarUtils from '../snackbar';
+import { HttpMethod } from '../../model/elite';
 
 class RestUtils {
+
     async call<T>(url: string, method: HttpMethod, body?: any, responseType?: any): Promise<T> {
         try {
             loadingStore.setLoading(true);
             let response;
-
             switch (method) {
                 case 'POST':
                     if (responseType) {
