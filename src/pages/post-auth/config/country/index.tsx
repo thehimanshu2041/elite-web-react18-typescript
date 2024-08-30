@@ -3,24 +3,35 @@ import BreadCrumb from "../../../../components/breadcrumb";
 import countryStore from "../../../../stores/config/country";
 import { CountryModel } from "../../../../model/config/country";
 import {
-    Card, FormControl, Grid, Pagination, Table, TableBody, TableCell,
+    Button,
+    Card, FormControl, Grid, Menu, MenuItem, Pagination, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, TextField
 } from "@mui/material";
 import NoContent from "../../../../components/no-content";
 import useDebounce from "../../../../utils/debounce";
 import { TableHeader } from "../../../../model/elite";
+import EliteButton from "../../../../components/elite-button";
+import { useNavigate } from "react-router";
+import { IconContext } from "react-icons";
+import { AiFillDelete, AiFillEdit, AiOutlineMore } from "react-icons/ai";
+import snackbarUtils from "../../../../utils/snackbar";
 
 const Country: React.FC = () => {
 
     const TABLE_HEAD = [
         { id: 'id', label: 'Id', align: 'left' },
+        { id: 'flag', label: 'Flag', align: 'left' },
         { id: 'name', label: 'Name', align: 'left' },
         { id: 'isp', label: 'Isp', align: 'left' },
         { id: 'num-code', label: 'Num Code', align: 'left' },
-        { id: 'phone-code', label: 'Phone Code', align: 'left' }
+        { id: 'phone-code', label: 'Phone Code', align: 'left' },
+        { id: 'actions', label: 'Actions', align: 'right' }
     ] as TableHeader[];
 
-    const { getCountriesBySearch } = countryStore;
+    const navigate = useNavigate();
+    const [menuAnchorEls, setMenuAnchorEls] = useState<{ [key: number]: HTMLElement | null }>({});
+
+    const { searchCountries, deleteCountry } = countryStore;
 
     const [country, setCountry] = useState<CountryModel[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,7 +46,7 @@ const Country: React.FC = () => {
     }, [debouncedSearchTerm, currentPage]);
 
     const onInit = async (searchTerm: string, page: number) => {
-        const data = await getCountriesBySearch(searchTerm, (page - 1), pageSize);
+        const data = await searchCountries(searchTerm, (page - 1), pageSize);
         setCountry(data.content);
         setTotalPages(data.totalPages);
     };
@@ -45,9 +56,32 @@ const Country: React.FC = () => {
         setCurrentPage(1);
     };
 
+    const handleMenuClick = (event: any, id: number) => {
+        setMenuAnchorEls((prev) => ({ ...prev, [id]: event.currentTarget }));
+    };
+
+    const handleMenuClose = (id: number) => {
+        setMenuAnchorEls((prev) => ({ ...prev, [id]: null }));
+    };
+
+    const handleEdit = (id: number) => {
+        handleMenuClose(id);
+        navigate(`/config/country/add-edit/${id}`);
+    }
+
+    const handleDelete = async (id: number) => {
+        handleMenuClose(id);
+        if (id) {
+            await deleteCountry(id);
+            snackbarUtils.success('Code type has been successfully deleted!!!');
+            setCurrentPage(1);
+            onInit(debouncedSearchTerm, currentPage);
+        }
+    }
+
     return (
         <>
-            <BreadCrumb heading="Country" />
+            <BreadCrumb heading="Country" actions={[<AddCountry />]} />
             <Card className='p-5 shadow-none'>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -79,6 +113,7 @@ const Country: React.FC = () => {
                             </TableHead>
                             <TableBody>
                                 {country?.length > 0 && country.map((row, index) => {
+                                    const menuOpen = Boolean(menuAnchorEls[row.id]);
                                     return (
                                         <>
                                             <TableRow hover tabIndex={-1}>
@@ -86,7 +121,15 @@ const Country: React.FC = () => {
                                                     {row.id}
                                                 </TableCell>
                                                 <TableCell align="left">
-                                                    {row.name}
+                                                    <img
+                                                        src={`https://flagcdn.com/16x12/${row?.isp?.toLowerCase()}.png`} // Using flagcdn for flags
+                                                        alt={`${row.niceName} flag`}
+                                                        width="20"
+                                                        height="15"
+                                                    />
+                                                </TableCell>
+                                                <TableCell align="left">
+                                                    {row.niceName}
                                                 </TableCell>
                                                 <TableCell align="left">
                                                     {row.isp}
@@ -96,6 +139,33 @@ const Country: React.FC = () => {
                                                 </TableCell>
                                                 <TableCell align="left">
                                                     {row.phoneCode}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    <div>
+                                                        <Button
+                                                            aria-controls={menuOpen ? 'basic-menu' : undefined}
+                                                            onClick={(e) => handleMenuClick(e, row.id!)}
+                                                            className="p-2 rounded-full hover:bg-gray-200 focus:outline-none"
+                                                        >
+                                                            <IconContext.Provider value={{ className: 'text-xl' }}>
+                                                                <AiOutlineMore />
+                                                            </IconContext.Provider>
+                                                        </Button>
+                                                        <Menu
+                                                            anchorEl={menuAnchorEls[row.id!]}
+                                                            open={menuOpen}
+                                                            onClose={() => handleMenuClose(row.id!)}
+                                                        >
+                                                            <MenuItem onClick={() => handleEdit(row.id)}>
+                                                                <AiFillEdit className="text-green mr-2" />
+                                                                Edit
+                                                            </MenuItem>
+                                                            <MenuItem onClick={() => handleDelete(row.id)}>
+                                                                <AiFillDelete className="text-red mr-2" />
+                                                                Delete
+                                                            </MenuItem>
+                                                        </Menu>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         </>
@@ -120,3 +190,21 @@ const Country: React.FC = () => {
 }
 
 export default Country;
+
+const AddCountry = () => {
+    const navigate = useNavigate();
+
+    const handleAdd = async () => {
+        navigate('/config/country/add-edit');
+    };
+
+    return (
+        <>
+            <EliteButton
+                onClick={handleAdd}
+            >
+                Add Country
+            </EliteButton>
+        </>
+    );
+};

@@ -9,11 +9,11 @@ import NoContent from "../../../../components/no-content";
 import useDebounce from "../../../../utils/debounce";
 import { TableHeader } from "../../../../model/elite";
 import userStore from "../../../../stores/user";
-import { AuthUserModel } from "../../../../model/auth";
 import { IconContext } from "react-icons";
-import { AiFillEdit, AiOutlineMore } from "react-icons/ai";
+import { AiFillDelete, AiFillEdit, AiOutlineMore } from "react-icons/ai";
 import { useNavigate } from "react-router";
-import EliteButton from "../../../../components/elite-button";
+import { UserModel } from "../../../../model/user";
+import snackbarUtils from "../../../../utils/snackbar";
 
 const User: React.FC = () => {
 
@@ -28,8 +28,8 @@ const User: React.FC = () => {
         { id: 'actions', label: 'Actions', align: 'right' }
     ] as TableHeader[];
 
-    const { searchUser } = userStore;
-    const [users, setUsers] = useState<AuthUserModel[]>([]);
+    const { searchUserDetails, deleteUserDetail } = userStore;
+    const [users, setUsers] = useState<UserModel[]>([]);
 
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -46,7 +46,7 @@ const User: React.FC = () => {
     }, [debouncedSearchTerm, currentPage]);
 
     const onInit = async (searchTerm: string, page: number) => {
-        const data = await searchUser(searchTerm, (page - 1), pageSize);
+        const data = await searchUserDetails(searchTerm, (page - 1), pageSize);
         setUsers(data.content);
         setTotalPages(data.totalPages);
     };
@@ -69,9 +69,19 @@ const User: React.FC = () => {
         navigate(`/config/user/add-edit/${id}`);
     }
 
+    const handleDelete = async (id: number) => {
+        handleMenuClose(id);
+        if (id) {
+            await deleteUserDetail(id);
+            snackbarUtils.success('User has been successfully deleted!!!');
+            setCurrentPage(1);
+            onInit(debouncedSearchTerm, currentPage);
+        }
+    }
+
     return (
         <>
-            <BreadCrumb heading="User" actions={[<AddUser />]} />
+            <BreadCrumb heading="User" />
             <Card className='p-5 shadow-none'>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -126,7 +136,17 @@ const User: React.FC = () => {
                                                     {row.phone}
                                                 </TableCell>
                                                 <TableCell align="left">
-                                                    {row.country?.niceName}
+                                                    <div className='flex-row flex'>
+                                                        <span className="mr-2 mt-1">
+                                                            <img
+                                                                src={`https://flagcdn.com/16x12/${row.country?.isp?.toLowerCase()}.png`} // Using flagcdn for flags
+                                                                alt={`${row.country?.niceName} flag`}
+                                                                width="20"
+                                                                height="15"
+                                                            />
+                                                        </span>
+                                                        {row.country?.niceName}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell align="right">
                                                     <div>
@@ -147,6 +167,10 @@ const User: React.FC = () => {
                                                             <MenuItem onClick={() => handleEdit(row.id!)}>
                                                                 <AiFillEdit className="text-green mr-2" />
                                                                 Edit
+                                                            </MenuItem>
+                                                            <MenuItem onClick={() => handleDelete(row.id!)}>
+                                                                <AiFillDelete className="text-red mr-2" />
+                                                                Delete
                                                             </MenuItem>
                                                         </Menu>
                                                     </div>
@@ -174,20 +198,3 @@ const User: React.FC = () => {
 }
 
 export default User;
-
-const AddUser: React.FC = () => {
-    const navigate = useNavigate();
-    const handleAdd = async () => {
-        navigate(`/config/user/add-edit`);
-    };
-
-    return (
-        <>
-            <EliteButton
-                onClick={handleAdd}
-            >
-                Add User
-            </EliteButton>
-        </>
-    );
-};

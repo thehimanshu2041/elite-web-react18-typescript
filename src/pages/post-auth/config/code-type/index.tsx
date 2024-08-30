@@ -26,7 +26,7 @@ const CodeType: React.FC = () => {
     const navigate = useNavigate();
     const [menuAnchorEls, setMenuAnchorEls] = useState<{ [key: number]: HTMLElement | null }>({});
 
-    const { searchCodeTypes, deleteCodeType } = codeTypeStore;
+    const { searchCodeTypeDetails, deleteCodeType } = codeTypeStore;
 
     const [codeType, setCodeType] = useState<CodeTypeModel[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +40,7 @@ const CodeType: React.FC = () => {
     }, [debouncedSearchTerm, currentPage]);
 
     const onInit = async (searchTerm: string, page: number) => {
-        const data = await searchCodeTypes(searchTerm, (page - 1), pageSize);
+        const data = await searchCodeTypeDetails(searchTerm, (page - 1), pageSize);
         setCodeType(data.content);
         setTotalPages(data.totalPages);
     };
@@ -68,7 +68,8 @@ const CodeType: React.FC = () => {
         if (id) {
             await deleteCodeType(id);
             snackbarUtils.success('Code type has been successfully deleted!!!');
-            window.location.reload();
+            setCurrentPage(1);
+            onInit(debouncedSearchTerm, currentPage);
         }
     }
 

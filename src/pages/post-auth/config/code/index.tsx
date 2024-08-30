@@ -17,6 +17,7 @@ import BreadCrumb from "../../../../components/breadcrumb";
 import codeTypeStore from "../../../../stores/config/code-type";
 import useDebounce from "../../../../utils/debounce";
 import { TableHeader } from "../../../../model/elite";
+import { ref } from "yup";
 
 const Code: React.FC = () => {
 
@@ -39,13 +40,13 @@ const Code: React.FC = () => {
     const [refId, setRefId] = useState<any>('');
     const navigate = useNavigate();
 
-    const { deleteCodesById, searchCode } = codeStore;
-    const { getCodeTypes } = codeTypeStore;
+    const { deleteCode, searchCode } = codeStore;
+    const { getCodeTypeDetails } = codeTypeStore;
 
     const [menuAnchorEls, setMenuAnchorEls] = useState<{ [key: number]: HTMLElement | null }>({});
 
     useEffect(() => {
-        getCodeTypes().then(c => setCodeType(c));
+        getCodeTypeDetails().then(c => setCodeType(c));
     }, []);
 
     useEffect(() => {
@@ -84,9 +85,10 @@ const Code: React.FC = () => {
     const handleDelete = async (id: number) => {
         handleMenuClose(id);
         if (id) {
-            await deleteCodesById(id);
+            await deleteCode(id);
             snackbarUtils.success('Code has been successfully deleted!!!');
-            window.location.reload();
+            setCurrentPage(1);
+            onInit(debouncedSearchTerm, currentPage, refId);
         }
     }
 

@@ -24,6 +24,13 @@ class RestUtils {
                         response = await axiosUtils.put<T>(url, body);
                     }
                     break;
+                case 'PATCH':
+                    if (responseType) {
+                        response = await axiosUtils.patch<T>(url, body, { responseType: responseType });
+                    } else {
+                        response = await axiosUtils.patch<T>(url, body);
+                    }
+                    break;
                 case 'DELETE':
                     if (responseType) {
                         response = await axiosUtils.delete<T>(url, { responseType: responseType });

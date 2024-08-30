@@ -3,7 +3,7 @@ import BreadCrumb from "../../../../../components/breadcrumb";
 import { useEffect, useState } from "react";
 import { Formik } from "formik";
 import * as yup from "yup";
-import { CodeTypeModel } from "../../../../../model/config/code-type";
+import { CodeTypeModel, CodeTypeReqModel } from "../../../../../model/config/code-type";
 import { Card, FormControl, Grid, TextField } from "@mui/material";
 import EliteButton from "../../../../../components/elite-button";
 import snackbarUtils from "../../../../../utils/snackbar";
@@ -13,15 +13,15 @@ const AddEditCodeType: React.FC = () => {
 
     const navigate = useNavigate();
     const { codeTypeId } = useParams();
-    const { getCodeTypesById, saveCodeType, updateCodeType } = codeTypeStore;
+    const { getCodeTypeById, createCodeType, updateCodeType } = codeTypeStore;
 
     let initialValues = {
         code: '',
         name: '',
         description: ''
-    } as CodeTypeModel;
+    } as CodeTypeReqModel;
 
-    const [codeTypeValue, setCodeTypeValue] = useState<CodeTypeModel>(initialValues);
+    const [codeTypeValue, setCodeTypeValue] = useState<CodeTypeReqModel | CodeTypeModel>(initialValues);
 
     const codeTypeSchema = yup.object().shape({
         code: yup.string().required("Code is required."),
@@ -29,7 +29,7 @@ const AddEditCodeType: React.FC = () => {
         description: yup.string().required("Description is required.")
     });
 
-    const handleSubmit = async (payload: CodeTypeModel) => {
+    const handleSubmit = async (payload: CodeTypeReqModel) => {
         if (codeTypeId) {
             updateCodeType(Number(codeTypeId), payload).then(data => {
                 if (data) {
@@ -38,7 +38,7 @@ const AddEditCodeType: React.FC = () => {
                 }
             });
         } else {
-            saveCodeType(payload).then(data => {
+            createCodeType(payload).then(data => {
                 if (data) {
                     snackbarUtils.success('Code type has been added successfully!!!');
                     navigate('/config/code-type');
@@ -49,7 +49,7 @@ const AddEditCodeType: React.FC = () => {
 
     const loadCodeType = async () => {
         if (codeTypeId) {
-            const existingCodeType = await getCodeTypesById(Number(codeTypeId));
+            const existingCodeType = await getCodeTypeById(Number(codeTypeId));
             setCodeTypeValue(existingCodeType);
         }
     }

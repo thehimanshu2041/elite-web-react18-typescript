@@ -1,31 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { Formik } from "formik";
 import * as yup from "yup";
-import EliteButton from '../../../../../components/elite-button';
-import BreadCrumb from '../../../../../components/breadcrumb';
 import { FormControl, Grid, MenuItem, Select, TextField, InputLabel, Card } from '@mui/material';
 import { CodeModel } from '../../../../../model/config/code';
 import codeStore from '../../../../../stores/config/code';
 import snackbarUtils from '../../../../../utils/snackbar';
+import { useAuth } from '../../../../../contexts/auth-context';
 import countryStore from '../../../../../stores/config/country';
-import { useNavigate, useParams } from 'react-router';
 import userStore from '../../../../../stores/user';
 import { CountryModel } from '../../../../../model/config/country';
 import { UserPatchReqModel } from '../../../../../model/user';
 
-const AddEditUser: React.FC = () => {
 
-    const navigate = useNavigate();
+const Profile: React.FC = () => {
+
+    const { logout } = useAuth();
     const { getCountries } = countryStore;
     const { getCodeDetailsByTypeCode } = codeStore;
-    const { getUserDetailById, patchUserDetail } = userStore;
+    const { getUserDetails, patchUserDetail, getUserSettings } = userStore;
 
-    const { id } = useParams();
 
     const [country, setCountry] = useState<CountryModel[]>([]);
     const [gender, setGender] = useState<CodeModel[]>([]);
+    const [isEditable, setIsEditable] = useState(false);
 
     const initialValues = {
+        id: Number(""),
         username: "",
         email: "",
         first_name: "",
@@ -61,15 +61,19 @@ const AddEditUser: React.FC = () => {
             phone: data.phone,
             country: data.country
         };
-
-        if (id) {
-            const signUpResult = await patchUserDetail(Number(id), payload as UserPatchReqModel);
-            if (signUpResult) {
+        const signUpResult = await patchUserDetail(userValue.id, payload as UserPatchReqModel);
+        if (signUpResult) {
+            resetForm();
+            setIsEditable(false);
+            if (userValue.username !== data.username) {
+                snackbarUtils.success("User with username has been successfully updated, please login with new credentials!!!");
+                logout();
+            } else {
                 snackbarUtils.success("User has been successfully updated!!!");
-                resetForm();
-                navigate('/config/user');
+                onInit();
             }
         }
+
     }
 
     useEffect(() => {
@@ -79,25 +83,22 @@ const AddEditUser: React.FC = () => {
     const onInit = async () => {
         getCountries().then(c => setCountry(c));
         getCodeDetailsByTypeCode("GENDER").then(g => setGender(g));
-        if (id) {
-            const extUser = await getUserDetailById(Number(id));
-            setUserValue({
-                username: extUser.username,
-                email: extUser.email,
-                first_name: extUser.first_name,
-                last_name: extUser.last_name,
-                gender: String(extUser.gender?.id),
-                address: extUser.address,
-                phone: String(extUser.phone),
-                country: String(extUser.country?.id)
-            });
-        }
-
+        const extUser = await getUserDetails();
+        setUserValue({
+            id: extUser.id,
+            username: extUser.username,
+            email: extUser.email,
+            first_name: extUser.first_name,
+            last_name: extUser.last_name,
+            gender: String(extUser.gender?.id),
+            address: extUser.address,
+            phone: String(extUser.phone),
+            country: String(extUser.country?.id)
+        });
     }
 
     return (
         <>
-            <BreadCrumb heading={id ? 'Edit User' : 'Add User'} backLink="/config/user" />
             <Formik
                 onSubmit={handleSubmit}
                 initialValues={userValue}
@@ -115,6 +116,19 @@ const AddEditUser: React.FC = () => {
                     return (
                         <form onSubmit={handleSubmit}>
                             <Card className='p-5 shadow-none'>
+                                <Grid item xs={12} md={12} className="flex justify-end">
+                                    {!isEditable && <>
+                                        <button className='cursor-pointer text-xl hover:bg-transparent pb-2'>
+                                            <i className='fas fa-edit' onClick={(e) => { e.preventDefault(); setIsEditable(true) }} />
+                                        </button>
+                                    </>}
+                                    {isEditable && <>
+                                        <button className='cursor-pointer text-xl hover:bg-transparent pb-2' type='submit'>
+                                            <i className='fas fa-check' />
+                                        </button>
+                                    </>}
+                                </Grid>
+
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={6}>
                                         <FormControl style={{ width: "100%" }}>
@@ -127,6 +141,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.username}
                                                 name="username"
+                                                disabled={!isEditable}
                                                 error={!!touched.username && !!errors.username}
                                                 helperText={!!touched.username && errors.username}
                                             />
@@ -143,6 +158,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.email}
                                                 name="email"
+                                                disabled={!isEditable}
                                                 error={!!touched.email && !!errors.email}
                                                 helperText={!!touched.email && errors.email}
                                             />
@@ -159,6 +175,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.first_name}
                                                 name="first_name"
+                                                disabled={!isEditable}
                                                 error={!!touched.first_name && !!errors.first_name}
                                                 helperText={!!touched.first_name && errors.first_name}
                                             />
@@ -175,6 +192,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.last_name}
                                                 name="last_name"
+                                                disabled={!isEditable}
                                                 error={!!touched.last_name && !!errors.last_name}
                                                 helperText={!!touched.last_name && errors.last_name}
                                             />
@@ -192,6 +210,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.gender}
                                                 name="gender"
+                                                disabled={!isEditable}
                                                 error={!!touched.gender && !!errors.gender}
                                             >
                                                 {gender.map((value, index) => (
@@ -213,6 +232,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.address}
                                                 name="address"
+                                                disabled={!isEditable}
                                                 error={!!touched.address && !!errors.address}
                                                 helperText={!!touched.address && errors.address}
                                             />
@@ -229,6 +249,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.phone}
                                                 name="phone"
+                                                disabled={!isEditable}
                                                 error={!!touched.phone && !!errors.phone}
                                                 helperText={!!touched.phone && errors.phone}
                                             />
@@ -246,6 +267,7 @@ const AddEditUser: React.FC = () => {
                                                 onChange={handleChange}
                                                 value={values.country}
                                                 name="country"
+                                                disabled={!isEditable}
                                                 error={!!touched.country && !!errors.country}
                                             >
                                                 {country.map((value, index) => (
@@ -266,9 +288,6 @@ const AddEditUser: React.FC = () => {
                                             </Select>
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={12} md={12}>
-                                        <EliteButton fullWidth type='submit'> Register </EliteButton>
-                                    </Grid>
                                 </Grid>
                             </Card>
                         </form>
@@ -279,4 +298,4 @@ const AddEditUser: React.FC = () => {
     );
 };
 
-export default AddEditUser;
+export default Profile;

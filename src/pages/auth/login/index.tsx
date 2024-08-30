@@ -1,13 +1,13 @@
 import React from 'react';
 import './index.css';
 import EliteButton from '../../../components/elite-button';
-import EliteLottiePlayer from '../../../components/elite-lottie-player';
 import { useAuth } from '../../../contexts/auth-context';
-import { AuthModel } from '../../../model/auth';
+import { LoginReqModel } from '../../../model/auth';
 import { useNavigate } from "react-router";
 import { Formik } from "formik";
 import * as yup from "yup";
-import { FormControl, TextField } from '@mui/material';
+import { FormControl, Grid, TextField } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const Login: React.FC = () => {
     const auth = useAuth();
@@ -23,7 +23,7 @@ const Login: React.FC = () => {
         password: yup.string().required("Password is required.")
     });
 
-    const handleSubmit = async (payload: AuthModel) => {
+    const handleSubmit = async (payload: LoginReqModel) => {
         const signInResult = await auth.login(payload);
         if (signInResult) {
             navigate('/');
@@ -47,70 +47,57 @@ const Login: React.FC = () => {
                 }) => {
                     return (
                         <form onSubmit={handleSubmit}>
-                            <div className="min-h-screen bg-blue text-gray-900 flex justify-center">
-                                <div className="max-w-screen-xl m-0 sm:m-10 flex justify-center flex-1">
-                                    <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12 bg-white shadow sm:rounded-lg ">
-                                        <div className="flex justify-center text-5xl font-bold">
-                                            <div>
-                                                <img
-                                                    src={process.env.PUBLIC_URL + '/static/icons/logo-text-color.png'}
-                                                    alt='logo'
-                                                    width={'250px'}
-                                                    className="mx-auto rounded-full" />
-                                            </div>
-                                        </div>
-                                        <div className="mt-5 flex flex-col items-center">
-                                            <div className="w-full flex-1 mt-8">
-                                                <div className="mx-auto max-w-xs">
-                                                    <FormControl style={{ width: "100%" }}>
-                                                        <TextField
-                                                            fullWidth
-                                                            type="text"
-                                                            label="username"
-                                                            placeholder="username"
-                                                            onBlur={handleBlur}
-                                                            onChange={handleChange}
-                                                            value={values.username}
-                                                            name="username"
-                                                            error={!!touched.username && !!errors.username}
-                                                            helperText={!!touched.username && errors.username}
-                                                        />
-                                                    </FormControl>
-                                                    <FormControl style={{ width: "100%" }}>
-                                                        <TextField
-                                                            fullWidth
-                                                            className='mt-5'
-                                                            type="password"
-                                                            label="password"
-                                                            placeholder="password"
-                                                            onBlur={handleBlur}
-                                                            onChange={handleChange}
-                                                            value={values.password}
-                                                            name="password"
-                                                            error={!!touched.password && !!errors.password}
-                                                            helperText={!!touched.password && errors.password}
-                                                        />
-                                                    </FormControl>
-                                                    <EliteButton fullWidth type='submit' className="mt-5"> Login </EliteButton>
-                                                </div>
-                                            </div>
-
-                                            <div className="mx-auto my-5 max-w-xs">
-                                                <div className="text-center leading-none text-gray-600 mt-3">
-                                                    Or Login with OAUTH0
-                                                </div>
-                                                <EliteButton fullWidth className="mt-5"> OAUTH0 </EliteButton>
-                                            </div>
+                            <div className="min-h-screen flex justify-center md:items-center">
+                                <Grid item xs={12} md={6} className='py-5 px-10 bg-white border border-gray md:rounded'>
+                                    <div className="flex justify-center text-5xl font-bold">
+                                        <div>
+                                            <img
+                                                src={process.env.PUBLIC_URL + '/static/icons/logo-text-color.png'}
+                                                alt='logo'
+                                                width={'250px'}
+                                                className="mx-auto rounded-full" />
                                         </div>
                                     </div>
-                                    <div className="flex-1 text-center hidden lg:flex">
-                                        <div className="w-full bg-contain bg-center bg-no-repeat">
-                                            <EliteLottiePlayer
-                                                src={process.env.PUBLIC_URL + '/static/lottie/login.json'}
-                                            />
+                                    <div className="mt-5 flex flex-col justify-center items-center">
+                                        <div className="w-full flex-1 mt-8">
+                                            <div className="mx-auto max-w-xs">
+                                                <FormControl style={{ width: "100%" }}>
+                                                    <TextField
+                                                        fullWidth
+                                                        type="text"
+                                                        label="Username"
+                                                        placeholder="Username"
+                                                        onBlur={handleBlur}
+                                                        onChange={handleChange}
+                                                        value={values.username}
+                                                        name="username"
+                                                        error={!!touched.username && !!errors.username}
+                                                        helperText={!!touched.username && errors.username}
+                                                    />
+                                                </FormControl>
+                                                <FormControl style={{ width: "100%" }}>
+                                                    <TextField
+                                                        fullWidth
+                                                        className='mt-5'
+                                                        type="password"
+                                                        label="Password"
+                                                        placeholder="Password"
+                                                        onBlur={handleBlur}
+                                                        onChange={handleChange}
+                                                        value={values.password}
+                                                        name="password"
+                                                        error={!!touched.password && !!errors.password}
+                                                        helperText={!!touched.password && errors.password}
+                                                    />
+                                                </FormControl>
+                                                <EliteButton fullWidth type='submit' className="mt-5"> Login </EliteButton>
+                                            </div>
+                                            <span className='flex justify-end mt-3'>
+                                                Don't have an account? <Link to="/registration" className="text-bold hover:underline">Register Here</Link>
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
+                                </Grid>
                             </div>
                         </form>
                     );

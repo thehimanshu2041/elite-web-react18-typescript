@@ -1,11 +1,13 @@
 import BreadCrumb from '../../../components/breadcrumb';
 import { useAuth } from '../../../contexts/auth-context';
 import userStore from '../../../stores/user';
+import Tiles from './tiles';
 
 const Dashboard: React.FC = () => {
     return (
         <>
             <BreadCrumb heading="Dashboard" actions={[<DownloadInfo />]} />
+            <Tiles />
         </>
     );
 }
@@ -14,11 +16,11 @@ export default Dashboard;
 
 const DownloadInfo: React.FC<any> = () => {
 
-    const { downloadUserInfo } = userStore;
+    const { getUserDetailsPdf } = userStore;
     const { user } = useAuth();
 
     const handelDownload = async () => {
-        downloadUserInfo().then(data => {
+        getUserDetailsPdf().then(data => {
             const url = window.URL.createObjectURL(new Blob([data], { type: 'application/pdf' }));
             const link = document.createElement('a');
             link.href = url;

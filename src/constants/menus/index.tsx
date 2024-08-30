@@ -24,6 +24,13 @@ export const adminMenus: MenuItem[] = [
         read: true,
     },
     {
+        name: "Settings",
+        key: "settings",
+        url: "/settings",
+        icon: "settings",
+        read: true,
+    },
+    {
         name: "Config",
         key: "config",
         url: "/config",
@@ -69,6 +76,13 @@ export const userMenus: MenuItem[] = [
         key: "dashboard",
         url: "/",
         icon: "dashboard",
+        read: true,
+    },
+    {
+        name: "Settings",
+        key: "settings",
+        url: "/settings",
+        icon: "settings",
         read: true,
     }
 ]

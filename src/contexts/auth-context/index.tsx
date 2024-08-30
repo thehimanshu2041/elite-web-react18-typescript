@@ -1,20 +1,21 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import restUtils from '../../utils/rest';
-import { AuthModel, AuthUserModel } from '../../model/auth';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { ELITE_TOKEN } from '../../model/elite';
+import { LoginReqModel } from '../../model/auth';
+import { UserModel, UserReqModel } from '../../model/user';
 
 
 const CXT_PATH = process.env.REACT_APP_BASE_URL;
 
 interface AuthContextProps {
     isAuthenticated: boolean;
-    login: (payload: AuthModel) => Promise<boolean>;
-    register: (payload: AuthUserModel) => Promise<boolean>;
+    login: (payload: LoginReqModel) => Promise<boolean>;
+    registration: (payload: UserReqModel) => Promise<boolean>;
     logout: () => void;
     token: string | null;
-    user: AuthUserModel | null;
+    user: UserModel | null;
 }
 
 interface JwtPayload {
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const tokenFromStorage = localStorage.getItem(ELITE_TOKEN);
     const [token, setToken] = useState<string | null>(tokenFromStorage || null);
 
-    const login = async (payload: AuthModel) => {
+    const login = async (payload: LoginReqModel) => {
         const response = await restUtils.call<string>(`${CXT_PATH}/auth/login`, 'POST', payload);
         if (response) {
             setToken(response);
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
     };
 
-    const register = async (payload: AuthUserModel) => {
+    const registration = async (payload: UserReqModel) => {
         return await restUtils.call<boolean>(`${CXT_PATH}/auth/registration`, 'POST', payload);
     };
 
@@ -82,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const getloggedInUser = (token: string | null): AuthUserModel | null => {
+    const getloggedInUser = (token: string | null): UserModel | null => {
         if (!token) {
             return null;
         }
@@ -96,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const authUser = {
                 username: decoded.sub,
                 roles: decoded.roles
-            } as AuthUserModel;
+            } as UserModel;
             return authUser;
         } catch (error) {
             logout();
@@ -108,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: isTokenValid(token),
         token,
         login,
-        register,
+        registration,
         logout,
         user: getloggedInUser(token)
     };

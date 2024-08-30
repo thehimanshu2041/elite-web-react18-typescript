@@ -1,6 +1,6 @@
 export const ELITE_TOKEN = 'elite_token';
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface Page<T> {
     content: T[];
@@ -35,4 +35,10 @@ export interface TableHeader {
     id: string;
     label: string;
     align: 'left' | 'right' | 'center';
+}
+
+export interface Tile {
+    id: number;
+    title: string;
+    content: React.ReactNode;
 }

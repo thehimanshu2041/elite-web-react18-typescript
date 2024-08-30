@@ -9,7 +9,7 @@ const EliteButton: React.FC<EliteButtonProps> = ({ children, className, ...props
   return (
     <Button
       {...props}
-      className={`bg-blue hover:bg-light-blue text-white py-2 px-3 rounded-lg ${className}`}
+      className={`bg-blue text-white py-2 px-3 rounded-lg ${className}`}
     >
       {children}
     </Button>

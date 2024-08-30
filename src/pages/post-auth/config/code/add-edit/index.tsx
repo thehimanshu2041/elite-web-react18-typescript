@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { Card, FormControl, Grid, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import EliteButton from "../../../../../components/elite-button";
 import snackbarUtils from "../../../../../utils/snackbar";
-import { CodeModel } from "../../../../../model/config/code";
+import { CodeModel, CodeReqModel } from "../../../../../model/config/code";
 import codeStore from "../../../../../stores/config/code";
 import { CodeTypeModel } from "../../../../../model/config/code-type";
 import codeTypeStore from "../../../../../stores/config/code-type";
@@ -15,15 +15,15 @@ const AddEditCode: React.FC = () => {
 
     const navigate = useNavigate();
     const { codeId } = useParams();
-    const { getCodeById, saveCode, updateCode } = codeStore;
-    const { getCodeTypes } = codeTypeStore;
+    const { getCodeById, createCode, updateCode } = codeStore;
+    const { getCodeTypeDetails } = codeTypeStore;
 
     let initialValues = {
+        codeTypeId: 0,
         code: '',
         name: '',
-        description: '',
-        codeTypeId: 0
-    } as CodeModel;
+        description: ''
+    } as any;
 
     const [codeValue, setCodeValue] = useState<CodeModel>(initialValues);
     const [codeTypes, setCodeTypes] = useState<CodeTypeModel[]>();
@@ -35,7 +35,7 @@ const AddEditCode: React.FC = () => {
         codeTypeId: yup.number().min(1).required("Code type is required.")
     });
 
-    const handleSubmit = async (payload: CodeModel) => {
+    const handleSubmit = async (payload: CodeReqModel) => {
         if (codeId) {
             updateCode(Number(codeId), payload).then(data => {
                 if (data) {
@@ -44,7 +44,7 @@ const AddEditCode: React.FC = () => {
                 }
             });
         } else {
-            saveCode(payload).then(data => {
+            createCode(payload).then(data => {
                 if (data) {
                     snackbarUtils.success('Code has been added successfully!!!');
                     navigate('/config/code');
@@ -58,7 +58,7 @@ const AddEditCode: React.FC = () => {
     }, []);
 
     const onInit = async () => {
-        const codeTypes = await getCodeTypes();
+        const codeTypes = await getCodeTypeDetails();
         setCodeTypes(codeTypes);
         if (codeId) {
             const existingCodeType = await getCodeById(Number(codeId));

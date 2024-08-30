@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import Avatar from 'react-avatar';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/auth-context';
 import { icons } from '../../../constants/icons';
 import { adminMenus, userMenus } from '../../../constants/menus';
 import './index.css';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import EliteButton from '../../elite-button';
 
 
 // Define types for props
@@ -24,7 +26,7 @@ export default function Sidebar({ sidebarCollapsed, setSidebarCollapsed }: Sideb
     const [collapseShow, setCollapseShow] = useState<string>('hidden');
     const location = useLocation();
     const currentPath = location.pathname;
-    const { logout, user } = useAuth();
+    const { user } = useAuth();
 
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
     const [hoveredIndex, setHoveredIndex] = useState<boolean>(false);
@@ -41,6 +43,16 @@ export default function Sidebar({ sidebarCollapsed, setSidebarCollapsed }: Sideb
         return jwtRoles.includes('ADMIN');
     };
 
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const handleOpenDialog = () => {
+        setDialogOpen(true);
+    };
+
+    const handleCloseDialog = () => {
+        setDialogOpen(false);
+    };
+
     return (
         <div>
             <header className="fixed top-0 right-0 p-2 bg-blue shadow-md w-full z-10 hidden md:block">
@@ -48,7 +60,7 @@ export default function Sidebar({ sidebarCollapsed, setSidebarCollapsed }: Sideb
                     <button
                         className='cursor-pointer text-white text-xl hover:bg-transparent px-2'
                     >
-                        <i className='fas fa-sign-out-alt' onClick={logout}></i>
+                        <i className='fas fa-sign-out-alt' onClick={handleOpenDialog}></i>
                     </button>
                     <Avatar name={user?.username} round={true} size='40' />
                 </div>
@@ -108,7 +120,7 @@ export default function Sidebar({ sidebarCollapsed, setSidebarCollapsed }: Sideb
                                     <button
                                         className='cursor-pointer text-white text-xl hover:bg-transparent px-2'
                                     >
-                                        <i className='fas fa-sign-out-alt' onClick={logout}></i>
+                                        <i className='fas fa-sign-out-alt' onClick={handleOpenDialog}></i>
                                     </button>
                                     <button
                                         className='cursor-pointer text-white text-xl hover:bg-transparent'
@@ -226,6 +238,31 @@ export default function Sidebar({ sidebarCollapsed, setSidebarCollapsed }: Sideb
                     </div>
                 </div>
             </nav>
+            <LogoutConfirmationDialog open={dialogOpen} onClose={handleCloseDialog} />
         </div>
     );
 }
+
+
+const LogoutConfirmationDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+    const { logout } = useAuth();
+    const handleLogout = () => {
+        logout();
+    };
+    return (
+        <Dialog open={open}>
+            <DialogTitle>Logout</DialogTitle>
+            <DialogContent>
+                Are you sure you want to log out?
+            </DialogContent>
+            <DialogActions>
+                <EliteButton onClick={onClose} className='bg-red'> Cancel </EliteButton>
+                <EliteButton onClick={() => {
+                    handleLogout();
+                    onClose();
+                }} className='bg-green'> Logout </EliteButton>
+
+            </DialogActions>
+        </Dialog>
+    );
+};

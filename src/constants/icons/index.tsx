@@ -5,7 +5,8 @@ import {
   RiDashboardFill,
   RiListSettingsFill,
   RiShieldUserFill,
-  RiSunFill
+  RiSunFill,
+  RiFolderSettingsFill
 } from 'react-icons/ri';
 
 interface Icon {
@@ -15,6 +16,7 @@ interface Icon {
 
 export const icons: Icon[] = [
   { name: 'dashboard', icon: <RiDashboardFill style={{ fontSize: '20px' }} /> },
+  { name: 'settings', icon: <RiFolderSettingsFill style={{ fontSize: '20px' }} /> },
   { name: 'setting', icon: <RiListSettingsFill style={{ fontSize: '20px' }} /> },
   { name: 'user', icon: <RiShieldUserFill style={{ fontSize: '20px' }} /> },
   { name: 'code', icon: <RiTerminalBoxFill style={{ fontSize: '20px' }} /> },
